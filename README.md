@@ -1,4 +1,5 @@
-# Analyzing-Business-Performance
+## FINAL ASSIGNMENT
+
 There are 4 companies - Bigg Bazar, D-Mart, Spar and Seven Eleven.
 
 There are 7 stores of each company in Delhi, Mumbai, Kolkata, Lucknow, Banglore, Indore, Jaipur.
@@ -14,3 +15,5 @@ For example, winter clothes ( bringing the example back XD) , it's sale will inc
 Using that sales data you need to understand and explain the behavior of each store and suggest ways to improve and increase business performance. 
 
 Go ahead, Analyzing Business Performance Using Demand Forecasting Techniques.
+
+All the best
