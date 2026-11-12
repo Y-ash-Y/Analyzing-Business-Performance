@@ -1,0 +1,20 @@
+{
+  "python": "3.12.14",
+  "platform": "Darwin arm64",
+  "versions": {
+    "numpy": "2.2.6",
+    "pandas": "2.2.3",
+    "scipy": "1.17.1",
+    "statsmodels": "0.14.5",
+    "prophet": "1.1.7",
+    "cmdstanpy": "1.2.5"
+  },
+  "seed": 1729,
+  "frequency": "W-FRI",
+  "source_sha256": {
+    "company1.csv": "fadbdf30ae9a9e8ec781fc58bb1a5f33364b3bbf308f73a55f4e1540db52dcc3",
+    "company2.csv": "c9832ef26f729af257620681e0da7b2f5dedb11636f4004cfa0d83cef86066c9",
+    "company3.csv": "ef174120ab04be0d14e4df361a6481de110341e9fa5d9b7a7043c820f73ca955",
+    "company4.csv": "441411a757ad9625269e7de66eacb85632f78d9b67996d5edd9b8405c19f84a9"
+  }
+}

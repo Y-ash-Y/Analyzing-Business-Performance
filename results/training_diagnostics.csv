@@ -1,0 +1,7 @@
+scope,evaluation,cutoff,train_weeks,imputed_rows,adf_statistic,adf_pvalue,Holt-Winters_optimizer,ARIMA_optimizer,SARIMA_optimizer
+complete_164,rolling,2012-01-27,104,0,-5.10006867,0.00001401,L-BFGS-B,lbfgs,lbfgs
+complete_164,rolling,2012-02-10,106,0,-5.24292290,0.00000718,L-BFGS-B,lbfgs,lbfgs
+complete_164,rolling,2012-02-24,108,0,-5.31721937,0.00000504,L-BFGS-B,lbfgs,lbfgs
+complete_164,rolling,2012-03-09,110,0,-5.35539501,0.00000420,L-BFGS-B,lbfgs,lbfgs
+complete_164,holdout,2012-04-06,114,0,-5.47299013,0.00000238,L-BFGS-B,lbfgs,lbfgs
+full_168,holdout,2012-04-06,114,134,-5.47639493,0.00000234,L-BFGS-B,lbfgs,lbfgs
