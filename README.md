@@ -1,57 +1,64 @@
 # Retail Demand Forecasting & Business Performance Analysis
 
-An IIT Kanpur Consulting Group case study on weekly retail sales across Bigg Bazar, D-Mart, Spar, and Seven Eleven. It compares statistical forecasting models and baselines, and preserves the submitted analysis of company, city, department, and holiday sales patterns.
+An IIT Kanpur Consulting Group case study in retail sales analysis and forecasting. The notebook explores weekly sales, data coverage, seasonality and holiday associations, then compares five statistical forecasting approaches with a seasonal-naive baseline.
 
-[Run the notebook](Demand_forecasting.ipynb) · [Read the corrected report](final_report.pdf) · [Review the validation methodology](docs/forecasting-validation.md) · [Inspect the original submission](historical/README.md)
+[Forecasting notebook](Demand_forecasting.ipynb) · [Submitted report](final_report.pdf) · [Historical notebook and saved results](https://github.com/Y-ash-Y/Analyzing-Business-Performance/blob/67e83af15bf4dffb490ae6519920fa586b8d6f4b/Demand_forecasting.ipynb)
 
-## Validated results
+## Data and scope
 
-The target is **weekly sales value** summed across a fixed cohort of **164 consistently observed store-department series**. The data spans 143 Fridays from February 2010 to October 2012. The holdout forecasts the last 29 weeks from one cutoff. Rolling backtesting refits each model at four earlier origins and forecasts four weeks per origin.
+The four case CSVs contain 143 Fridays from February 5, 2010 to October 26, 2012. A row-level comparison matched all 32,454 supplied rows to the Walmart recruiting dataset after restoring the source store IDs. The files map to Walmart stores 1–7, 12–18, 23–29 and 34–40. The project’s retailer and city names are assignment aliases. The source gives anonymized store and department IDs. [Walmart data description](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data) · [Reference CSV used for the comparison](https://github.com/shauryanegi/Walmart-Store-Sales-Forecasting/blob/HEAD/train.csv.zip)
+
+The case scope includes departments 1–6. Company 3’s Store 7 includes 8,597 additional source records for other departments. Company 4 has 167 absent store-department weeks within the case scope. Its Store 3, Department 6 accounts for 124 across **five gaps** of 31, 39, 35, 11 and 8 weeks. The same dates are absent in the source reference, and the reason for the gaps is unknown.
+
+## Validated forecasting results
+
+The target is **aggregate weekly sales value across 164 consistently observed store-department series**. The holdout forecasts 29 Fridays from a single cutoff. The rolling comparison refits each model at four earlier cutoffs and forecasts four weeks per cutoff.
 
 | Model | Holdout MAE | Holdout RMSE | Holdout MAPE | Rolling MAPE |
 |---|---:|---:|---:|---:|
-| Prophet | 121,689.41 | 181,477.53 | 3.58% | 7.04% |
-| Seasonal naive | 169,307.74 | 313,436.33 | 5.02% | 6.52% |
-| Holt-Winters | 202,354.14 | 265,527.97 | 5.98% | 8.01% |
+| Prophet | 121,689.41 | 181,477.53 | **3.58%** | 7.04% |
+| Seasonal naive | 169,307.74 | 313,436.33 | 5.02% | **6.52%** |
+| Holt–Winters | 202,354.14 | 265,527.97 | 5.98% | 8.01% |
 | Moving average | 330,996.41 | 381,015.37 | 9.69% | 14.32% |
 | ARIMA | 383,009.66 | 426,570.21 | 11.28% | 7.26% |
 | SARIMA | 1,096,160.22 | 1,147,789.02 | 32.58% | 7.13% |
 
-Prophet leads the 29-week holdout. Seasonal naive has the lowest MAE and MAPE in the four-week rolling backtests, and ARIMA has the lowest rolling RMSE. The rolling windows share some target dates and cover 10 distinct Fridays. Full per-fold scores and date-level predictions are available in the [results](results/).
+Prophet leads the holdout on all three measures. Seasonal naive leads the rolling comparison on MAE and MAPE, and ARIMA leads on rolling RMSE. The overlapping rolling windows contain 16 forecast pairs across 10 distinct Fridays. The 29-week holdout includes one flagged holiday Friday, and neither evaluation includes November or December. The 26-week Prophet forecast therefore has no demonstrated year-end accuracy or interval calibration from these evaluations.
 
-The **168-series sensitivity check** refits all models with cutoff-safe training imputation and scores only the **two** holdout Fridays with every actual observed. The [validation report](docs/forecasting-validation.md#full-panel-sensitivity) gives those scores and explains the coverage limit.
+### Validation method
 
-## Data and methodology
+- **Exact dates.** All models forecast Fridays. Scoring validates unique date keys, requires the same date set, and joins predictions to observed actuals by date.
+- **Chronological splits.** The holdout trains on 114 weeks through April 6, 2012. The four earlier rolling folds train on 104, 106, 108 and 110 weeks. ADF uses training data and serves as a diagnostic.
+- **Missing sales.** The primary cohort excludes the four incomplete series. The separate 168-series sensitivity fills only training gaps using earlier observed sales or same-Friday peer medians for leading gaps. It scores the two complete holdout Fridays, June 8 and August 31, 2012. The forecast notebook keeps the gap audit, fills, fold scores and date-level predictions available as tables.
+- **Historical comparison.** The original Prophet run paired Sunday predictions with Friday sales by row position and scored a reconstructed 168-series target. The historical 4.80% MAPE and the current 3.58% MAPE come from different evaluation setups.
 
-- Four CSVs cover seven stores per retailer and six in-scope departments per store. The pipeline filters out-of-scope department identifiers from Spar and validates the date calendar and key uniqueness.
-- Seven Eleven has **167 missing store-department weeks**. Store 3, Department 6 accounts for 124 across **five gaps** of 31, 39, 35, 11, and 8 weeks in chronological order. The [gap audit](results/missing_gaps.csv) gives the dates and other affected series.
-- Every model forecasts Fridays. Scoring requires exact date coverage and joins actuals and forecasts by date. Training fills use a prior sale from the same series or a same-Friday observed peer median when a series has no earlier sale. Evaluation actuals come directly from the source CSVs.
-- The notebook generates 26 Friday-dated Prophet forecasts with nominal 80% intervals for each scope. The observed history is too short to validate interval coverage at that horizon. Sales value is a proxy for demand. The CSVs give sales values without currency metadata, unit volumes, or unmet-demand measurements.
+## Interpreting the business results
 
-The historical exploratory analysis covers retailer and city performance, seasonal and holiday sales patterns, and hypotheses about the anonymized departments. Department identities and holiday effects remain interpretations of observational data. [Historical notebook and report](historical/README.md)
+The observed sums reproduce the original rankings within the case groups, including the highest and lowest assigned city totals. They measure recorded sales, with unequal coverage for one group, and provide no evidence on market size, profitability or store efficiency.
 
-## Reproduce
+The source’s ten flagged dates correspond to Super Bowl, Labor Day, Thanksgiving and Christmas. On the complete cohort, departments 5 and 6 show **57.33%** and **75.26%** higher mean sales on flagged Fridays, respectively. These are descriptive associations. Department names are hypotheses. The files provide no measures of promotions, units demanded, stockouts or margins. [Source holiday calendar](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data)
 
-Use Python 3.12 and run from the repository root. The pinned environment contains the complete forecasting dependency set.
+## Run locally
+
+Use Python 3.12. From the repository root, create an environment with the versions used for the forecasting rerun.
 
 ~~~bash
 python3.12 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+
+python -m pip install \
+  cmdstanpy==1.2.5 contourpy==1.4.0 cycler==0.12.1 fonttools==4.68.0 \
+  holidays==0.108 importlib_resources==7.1.0 kiwisolver==1.5.1 matplotlib==3.11.2 \
+  numpy==2.2.6 packaging==26.3 pandas==2.2.3 patsy==1.0.3 \
+  pillow==13.0.0 prophet==1.1.7 pyparsing==3.3.3 python-dateutil==2.9.0.post0 \
+  pytz==2026.6 scipy==1.17.1 six==1.17.0 stanio==0.5.1 \
+  statsmodels==0.14.5 tqdm==4.70.1 tzdata==2026.6
+python -m pip install notebook==7.4.7
 
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
-python -m unittest discover -s tests -v
-python -m forecasting.evaluate
+jupyter notebook Demand_forecasting.ipynb
 ~~~
 
-The command writes the metrics, predictions, missingness audit, and run metadata to `results/`. Pass `--output-dir PATH` to write elsewhere. To run the notebook interactively, install Jupyter Notebook in the active environment and open `Demand_forecasting.ipynb` from the repository root.
+In Jupyter, select **Run All**. The notebook computes the exploratory charts, forecast results, and six regression checks in memory.
 
-| Path | Contents |
-|---|---|
-| [forecasting/](forecasting/) | Panel preparation, model adapters, and evaluation |
-| [results/](results/) | Versioned rerun outputs and source checksums |
-| [tests/](tests/) | Regression tests for Friday alignment, metrics, imputation, and source gaps |
-| [historical/](historical/) | Original notebook, saved outputs, and submitted report |
-| [company1.csv](company1.csv)–[company4.csv](company4.csv) | Source sales data |
-
-Released under the [MIT License](LICENSE).
+Repository code is released under the [MIT License](LICENSE).
