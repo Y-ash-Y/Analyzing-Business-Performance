@@ -26,6 +26,12 @@ The retailer and city names are the assignment's labels for groups of anonymized
 
 The source flags selected US events, including Thanksgiving and Christmas. The holiday comparisons describe observed associations with those weeks.
 
+### Store performance scorecard
+
+The [notebook](Demand_forecasting.ipynb) profiles all 28 stores with record coverage, sales growth over 39 matched Fridays in 2011 and 2012, and each store's largest department by sales share in the 2012 comparison. Sales and department mix use departments 1–4, which are fully observed at every store. Coverage is calculated separately for all six departments. The matched weeks run from February through October.
+
+Seven Eleven's Indore store grew **11.4%**, while its Kolkata store declined **5.4%** on the same departments and weeks. Kolkata recorded **704 of 858** expected store–department weeks across all six departments. Review its coverage first, then compare department trends with Indore. D-Mart led overall recorded sales, while four of its seven stores declined on the matched comparison, giving the team four locations to investigate.
+
 ### Department identification
 
 The assignment asks for a plausible mapping from anonymous IDs to six candidate departments. The proposed mapping uses sales levels, seasonal timing, and differences on flagged holiday weeks.
@@ -94,4 +100,5 @@ jupyter notebook Demand_forecasting.ipynb
 | --- | --- |
 | [`Demand_forecasting.ipynb`](Demand_forecasting.ipynb) | Data audit, exploratory analysis, forecasting, and validation |
 | [`company1.csv`](company1.csv) through [`company4.csv`](company4.csv) | Weekly sales inputs |
+| [`final-report.pdf`](final-report.pdf) | Project report and forecast findings |
 | [`LICENSE`](LICENSE) | MIT license for repository code |
