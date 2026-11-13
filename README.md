@@ -1,60 +1,78 @@
 # Retail Demand Forecasting & Business Performance Analysis
 
-An IIT Kanpur Consulting Group case study in retail sales analysis and forecasting. The notebook explores weekly sales, data coverage, seasonality and holiday associations, then compares five statistical forecasting approaches with a seasonal-naive baseline.
+**Yash Yadav · IIT Kanpur SNT Summer Project 2023**
 
-[Forecasting notebook](Demand_forecasting.ipynb) · [Submitted report](final_report.pdf) · [Historical notebook and saved results](https://github.com/Y-ash-Y/Analyzing-Business-Performance/blob/67e83af15bf4dffb490ae6519920fa586b8d6f4b/Demand_forecasting.ipynb)
+A retail consulting case study that examines sales across stores, infers the identities of unnamed departments from sales patterns, and forecasts the next six months of weekly sales. The analysis combines store benchmarking, department profiling, and time-series evaluation to identify where a retail planning team should investigate performance or prepare for seasonal peaks.
 
-## Data and scope
+## Assignment brief
 
-The four case CSVs contain 143 Fridays from February 5, 2010 to October 26, 2012. A row-level comparison matched all 32,454 supplied rows to the Walmart recruiting dataset after restoring the source store IDs. The files map to Walmart stores 1–7, 12–18, 23–29 and 34–40. The project’s retailer and city names are assignment aliases. The source gives anonymized store and department IDs. [Walmart data description](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data) · [Reference CSV used for the comparison](https://github.com/shauryanegi/Walmart-Store-Sales-Forecasting/blob/HEAD/train.csv.zip)
+| Dimension | Case scope |
+| --- | --- |
+| Retailers | Bigg Bazar, D-Mart, Spar, and Seven Eleven |
+| Stores | Seven per retailer, one each in Delhi, Mumbai, Kolkata, Lucknow, Bangalore, Indore, and Jaipur |
+| Departments | Beverages, Groceries, Electronics, Clothing & Apparel, Furniture, and Books & Stationery |
+| Sales history | 143 weeks from February 2010 through October 2012, with a weekly holiday flag |
+| Deliverables | Explain store sales behavior and suggest improvements, infer the six department names from their sales patterns, and produce a six-month sales forecast |
 
-The case scope includes departments 1–6. Company 3’s Store 7 includes 8,597 additional source records for other departments. Company 4 has 167 absent store-department weeks within the case scope. Its Store 3, Department 6 accounts for 124 across **five gaps** of 31, 39, 35, 11 and 8 weeks. The same dates are absent in the source reference, and the reason for the gaps is unknown.
+The retailer and city names are the assignment's labels for groups of anonymized Walmart stores. The analysis compares those groups within the case. The input files provide department IDs, and the forecast target is recorded sales value. [Source dataset and holiday calendar](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data)
 
-## Validated forecasting results
+## Business performance and recommendations
 
-The target is **aggregate weekly sales value across 164 consistently observed store-department series**. The holdout forecasts 29 Fridays from a single cutoff. The rolling comparison refits each model at four earlier cutoffs and forecasts four weeks per cutoff.
+| Analysis | Finding | Planning implication |
+| --- | --- | --- |
+| Retailer performance | D-Mart led recorded sales at **158.4 million**, followed by Spar and Bigg Bazar. Seven Eleven had lower observation coverage than the other groups. | Compare stores on a common set of weeks and departments before attributing differences to operating performance. |
+| Store performance | Mumbai led total recorded sales across the city groups, followed by Indore and Delhi. The leading retailer varied by location. Seven Eleven led within the Indore group despite ranking fourth overall. | Use the city-by-retailer comparison to select stores for peer review and examine their department mix and weekly sales patterns. |
+| Seasonality and holidays | Departments 5 and 6 showed pronounced year-end peaks. Their mean sales were **57.33%** and **75.26%** higher on flagged Fridays, respectively. | Review stock and staffing plans for peak weeks, and use event-level and promotion data to investigate the source of the differences. |
 
-| Model | Holdout MAE | Holdout RMSE | Holdout MAPE | Rolling MAPE |
-|---|---:|---:|---:|---:|
-| Prophet | 121,689.41 | 181,477.53 | **3.58%** | 7.04% |
-| Seasonal naive | 169,307.74 | 313,436.33 | 5.02% | **6.52%** |
-| Holt–Winters | 202,354.14 | 265,527.97 | 5.98% | 8.01% |
-| Moving average | 330,996.41 | 381,015.37 | 9.69% | 14.32% |
-| ARIMA | 383,009.66 | 426,570.21 | 11.28% | 7.26% |
-| SARIMA | 1,096,160.22 | 1,147,789.02 | 32.58% | 7.13% |
+The source flags selected US events, including Thanksgiving and Christmas. The holiday comparisons describe observed associations with those weeks.
 
-Prophet leads the holdout on all three measures. Seasonal naive leads the rolling comparison on MAE and MAPE, and ARIMA leads on rolling RMSE. The overlapping rolling windows contain 16 forecast pairs across 10 distinct Fridays. The 29-week holdout includes one flagged holiday Friday, and neither evaluation includes November or December. The year-end backtest below evaluates peak timing and size in a separate window.
+### Department identification
 
-### 2011 year-end backtest
+The assignment asks for a plausible mapping from anonymous IDs to six candidate departments. The proposed mapping uses sales levels, seasonal timing, and differences on flagged holiday weeks.
 
-The three models trained on 91 weeks through October 28, 2011 and forecast nine Fridays from November 4 through December 30 on the 164-series target. Positive errors indicate overprediction. Peak level error compares each model’s maximum forecast with the observed maximum of 6.94 million on December 23.
+| Department ID | Proposed category | Observed pattern |
+| --- | --- | --- |
+| 1 | Clothing & Apparel | Recurring peaks and a modest flagged-week difference |
+| 2 | Groceries | Highest mean weekly sales and a small negative flagged-week difference |
+| 3 | Books & Stationery | Highest mean weekly sales in August |
+| 4 | Beverages | Mid-range sales and a modest flagged-week difference |
+| 5 | Electronics | Pronounced year-end peak and higher sales on flagged weeks |
+| 6 | Furniture | Lowest sales level and largest proportional flagged-week difference |
 
-| Model | Nine-week MAPE | Thanksgiving-week error | Forecast peak date | Peak level error |
-|---|---:|---:|---|---:|
-| Seasonal naive | **7.03%** | +0.9% | Dec 23 | +13.0% |
-| Prophet | 16.35% | −30.5% | Dec 16 | −15.1% |
-| Moving average | 16.72% | −33.7% | All nine weeks tied | −47.1% |
+These category assignments are hypotheses based on the sales patterns. Confirm them with product or department records before using them for category decisions.
 
-Seasonal naive had the lowest MAE and RMSE and matched the observed peak date. This comparison covers one year-end season. The 26-week forecast intervals remain uncalibrated.
+## Forecasting approach
 
-### Validation method
+1. **Audit the weekly sales panel.** Validate unique store–department–week keys and Friday dates, retain the six in-scope departments, and document missing records. The expected panel has 168 series and 167 missing observations. One series accounts for 124 missing weeks across five gaps.
+2. **Fit models and baselines.** Compare Prophet, Holt–Winters, ARIMA, and SARIMA against a 52-week seasonal naive baseline and a 12-week moving average.
+3. **Evaluate on aligned dates.** Train chronologically and match each forecast to the observed total for the same Friday. The main comparisons use the same 164 consistently observed series. The separate full-panel sensitivity check fills training gaps using only observations available at each cutoff and scores only fully observed Friday totals.
 
-- **Exact dates.** All models forecast Fridays. Scoring validates unique date keys, requires the same date set, and joins predictions to observed actuals by date.
-- **Chronological splits.** The holdout trains on 114 weeks through April 6, 2012. The four earlier rolling folds train on 104, 106, 108 and 110 weeks. ADF uses training data and serves as a diagnostic.
-- **Missing sales.** The primary cohort excludes the four incomplete series. The separate 168-series sensitivity fills only training gaps using earlier observed sales or same-Friday peer medians for leading gaps. It scores the two complete holdout Fridays, June 8 and August 31, 2012. The forecast notebook keeps the gap audit, fills, fold scores and date-level predictions available as tables.
-- **Historical comparison.** The original Prophet run paired Sunday predictions with Friday sales by row position and scored a reconstructed 168-series target. The historical 4.80% MAPE and the current 3.58% MAPE come from different evaluation setups.
+## Forecast results
 
-## Interpreting the business results
+MAPE is mean absolute percentage error. The 29-week holdout uses one cutoff. The rolling evaluation forecasts four weeks at each of four earlier cutoffs. The year-end test forecasts nine Fridays from November through December 2011 and compares three models.
 
-The observed sums reproduce the original rankings within the case groups, including the highest and lowest assigned city totals. They measure recorded sales, with unequal coverage for one group, and provide no evidence on market size, profitability or store efficiency.
+| Model | 29-week holdout MAPE | Four-week rolling MAPE | Nine-week year-end MAPE |
+| --- | ---: | ---: | ---: |
+| Prophet | **3.58%** | 7.04% | 16.35% |
+| Seasonal naive | 5.02% | **6.52%** | **7.03%** |
+| Holt–Winters | 5.98% | 8.01% | — |
+| 12-week moving average | 9.69% | 14.32% | 16.72% |
+| ARIMA | 11.28% | 7.26% | — |
+| SARIMA | 32.58% | 7.13% | — |
 
-The source’s ten flagged dates correspond to Super Bowl, Labor Day, Thanksgiving and Christmas. On the complete cohort, departments 5 and 6 show **57.33%** and **75.26%** higher mean sales on flagged Fridays, respectively. These are descriptive associations. Department names are hypotheses. The files provide no measures of promotions, units demanded, stockouts or margins. [Source holiday calendar](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data)
+Seasonal naive matched the December 23 peak date and overestimated its size by **13.0%**. It overpredicted Thanksgiving-week sales by **0.9%**, while Prophet underpredicted them by **30.5%**. These results show why peak timing and magnitude matter alongside average error for seasonal planning.
 
-## Run locally
+### Six-month forecast
 
-Use Python 3.12. From the repository root, create an environment with the versions used for the forecasting rerun.
+Prophet was refit on the full 164-series history to project **26 weekly totals from November 2, 2012 through April 26, 2013**. The projected peak is **5.72 million in recorded sales value** for the week ending December 21, 2012. The notebook includes the forecast path and nominal 80% intervals.
 
-~~~bash
+The year-end backtest covers one season, the full-panel sensitivity check has two complete holdout weeks, and coverage of the six-month prediction intervals has not been established. Inventory decisions at store or product level require forecasts and validation at those levels.
+
+## Reproduce the analysis
+
+Use **Python 3.12** and run from the repository root with the pinned versions below. Open the notebook and select **Run All** to regenerate the results and charts and run the regression checks.
+
+```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 
@@ -64,13 +82,16 @@ python -m pip install \
   numpy==2.2.6 packaging==26.3 pandas==2.2.3 patsy==1.0.3 \
   pillow==13.0.0 prophet==1.1.7 pyparsing==3.3.3 python-dateutil==2.9.0.post0 \
   pytz==2026.6 scipy==1.17.1 six==1.17.0 stanio==0.5.1 \
-  statsmodels==0.14.5 tqdm==4.70.1 tzdata==2026.6
-python -m pip install notebook==7.4.7
+  statsmodels==0.14.5 tqdm==4.70.1 tzdata==2026.6 notebook==7.4.7
 
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
 jupyter notebook Demand_forecasting.ipynb
-~~~
+```
 
-In Jupyter, select **Run All**. The notebook computes the exploratory charts, forecast results, and six regression checks in memory.
+## Repository contents
 
-Repository code is released under the [MIT License](LICENSE).
+| Path | Contents |
+| --- | --- |
+| [`Demand_forecasting.ipynb`](Demand_forecasting.ipynb) | Data audit, exploratory analysis, forecasting, and validation |
+| [`company1.csv`](company1.csv) through [`company4.csv`](company4.csv) | Weekly sales inputs |
+| [`LICENSE`](LICENSE) | MIT license for repository code |
