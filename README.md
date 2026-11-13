@@ -23,7 +23,19 @@ The target is **aggregate weekly sales value across 164 consistently observed st
 | ARIMA | 383,009.66 | 426,570.21 | 11.28% | 7.26% |
 | SARIMA | 1,096,160.22 | 1,147,789.02 | 32.58% | 7.13% |
 
-Prophet leads the holdout on all three measures. Seasonal naive leads the rolling comparison on MAE and MAPE, and ARIMA leads on rolling RMSE. The overlapping rolling windows contain 16 forecast pairs across 10 distinct Fridays. The 29-week holdout includes one flagged holiday Friday, and neither evaluation includes November or December. The 26-week Prophet forecast therefore has no demonstrated year-end accuracy or interval calibration from these evaluations.
+Prophet leads the holdout on all three measures. Seasonal naive leads the rolling comparison on MAE and MAPE, and ARIMA leads on rolling RMSE. The overlapping rolling windows contain 16 forecast pairs across 10 distinct Fridays. The 29-week holdout includes one flagged holiday Friday, and neither evaluation includes November or December. The year-end backtest below evaluates peak timing and size in a separate window.
+
+### 2011 year-end backtest
+
+The three models trained on 91 weeks through October 28, 2011 and forecast nine Fridays from November 4 through December 30 on the 164-series target. Positive errors indicate overprediction. Peak level error compares each model’s maximum forecast with the observed maximum of 6.94 million on December 23.
+
+| Model | Nine-week MAPE | Thanksgiving-week error | Forecast peak date | Peak level error |
+|---|---:|---:|---|---:|
+| Seasonal naive | **7.03%** | +0.9% | Dec 23 | +13.0% |
+| Prophet | 16.35% | −30.5% | Dec 16 | −15.1% |
+| Moving average | 16.72% | −33.7% | All nine weeks tied | −47.1% |
+
+Seasonal naive had the lowest MAE and RMSE and matched the observed peak date. This comparison covers one year-end season. The 26-week forecast intervals remain uncalibrated.
 
 ### Validation method
 
