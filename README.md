@@ -1,198 +1,76 @@
 # Retail Demand Forecasting & Business Performance Analysis
 
-**Business analytics · Statistical forecasting · Retail decision support**
+An IIT Kanpur Consulting Group case study in retail sales analysis and forecasting. The notebook explores weekly sales, data coverage, seasonality and holiday associations, then compares five statistical forecasting approaches with a seasonal-naive baseline.
 
-An end-to-end exploratory analytics and time-series forecasting project developed as an IIT Kanpur Consulting Group summer assignment. The project examines weekly retail sales across four companies, seven cities, and six anonymized departments; investigates seasonality and holiday behavior; compares five forecasting methods; and translates findings into retail planning recommendations.
+[Forecasting notebook](Demand_forecasting.ipynb) · [Submitted report](final_report.pdf) · [Historical notebook and saved results](https://github.com/Y-ash-Y/Analyzing-Business-Performance/blob/67e83af15bf4dffb490ae6519920fa586b8d6f4b/Demand_forecasting.ipynb)
 
-[Explore the notebook](./Demand_forecasting.ipynb) · [Read the full project report](./final_report.pdf) · [View the license](./LICENSE)
+## Data and scope
 
-> **Project status:** Educational analytics case study with a reproducible notebook and a historical report. The published accuracy figures are **original notebook results, not yet validated after a time-index and leakage audit**. See [Validation notes](#validation-notes-and-known-limitations) before citing them as confirmed out-of-sample performance.
+The four case CSVs contain 143 Fridays from February 5, 2010 to October 26, 2012. A row-level comparison matched all 32,454 supplied rows to the Walmart recruiting dataset after restoring the source store IDs. The files map to Walmart stores 1–7, 12–18, 23–29 and 34–40. The project’s retailer and city names are assignment aliases. The source gives anonymized store and department IDs. [Walmart data description](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data) · [Reference CSV used for the comparison](https://github.com/shauryanegi/Walmart-Store-Sales-Forecasting/blob/HEAD/train.csv.zip)
 
-## Executive summary
+The case scope includes departments 1–6. Company 3’s Store 7 includes 8,597 additional source records for other departments. Company 4 has 167 absent store-department weeks within the case scope. Its Store 3, Department 6 accounts for 124 across **five gaps** of 31, 39, 35, 11 and 8 weeks. The same dates are absent in the source reference, and the reason for the gaps is unknown.
 
-Retailers must plan inventory and promotions before demand is observed. Excess stock ties up working capital; insufficient stock risks lost sales. This project explores whether historical weekly sales and recurring seasonal patterns can support more informed planning.
+## Validated forecasting results
 
-**Project scope**
+The target is **aggregate weekly sales value across 164 consistently observed store-department series**. The holdout forecasts 29 Fridays from a single cutoff. The rolling comparison refits each model at four earlier cutoffs and forecasts four weeks per cutoff.
 
-| Dimension | Coverage |
-|---|---|
-| Retailers | Bigg Bazar, D-Mart, Spar, Seven Eleven |
-| Markets | Delhi, Mumbai, Kolkata, Lucknow, Bangalore, Indore, Jaipur |
-| Store / department structure | 7 stores per retailer; 6 departments per store |
-| Period | 5 February 2010 – 26 October 2012 |
-| Frequency | Weekly, week-ending Friday (143 weeks) |
-| Analysis-ready panel | 24,024 company × store × department × week rows after reconstruction |
-| Forecasting target | **Combined weekly sales value** across all companies, stores, and departments |
-| Train / test | 114 training weeks / 29 held-out weeks in the original notebook |
-| Forecast horizon | 26 weeks (approximately six months) |
+| Model | Holdout MAE | Holdout RMSE | Holdout MAPE | Rolling MAPE |
+|---|---:|---:|---:|---:|
+| Prophet | 121,689.41 | 181,477.53 | **3.58%** | 7.04% |
+| Seasonal naive | 169,307.74 | 313,436.33 | 5.02% | **6.52%** |
+| Holt–Winters | 202,354.14 | 265,527.97 | 5.98% | 8.01% |
+| Moving average | 330,996.41 | 381,015.37 | 9.69% | 14.32% |
+| ARIMA | 383,009.66 | 426,570.21 | 11.28% | 7.26% |
+| SARIMA | 1,096,160.22 | 1,147,789.02 | 32.58% | 7.13% |
 
-**Important target distinction:** The data records sales value, not physical units sold or unmet demand. Sales forecasts are used as a proxy for demand; they are not directly item-level replenishment forecasts. The CSVs do not explicitly document a currency.
+Prophet leads the holdout on all three measures. Seasonal naive leads the rolling comparison on MAE and MAPE, and ARIMA leads on rolling RMSE. The overlapping rolling windows contain 16 forecast pairs across 10 distinct Fridays. The 29-week holdout includes one flagged holiday Friday, and neither evaluation includes November or December. The year-end backtest below evaluates peak timing and size in a separate window.
 
-## Business questions
+### 2011 year-end backtest
 
-1. Which companies and cities contribute the most recorded sales?
-2. How do department-level patterns vary across the year?
-3. How do sales on flagged holiday weeks differ from other weeks?
-4. Can the six hidden department labels be inferred from their behavioral signatures?
-5. How do simple baselines compare with statistical time-series forecasting models?
-6. What planning decisions could these descriptive findings inform?
+The three models trained on 91 weeks through October 28, 2011 and forecast nine Fridays from November 4 through December 30 on the 164-series target. Positive errors indicate overprediction. Peak level error compares each model’s maximum forecast with the observed maximum of 6.94 million on December 23.
 
-## Methodology
+| Model | Nine-week MAPE | Thanksgiving-week error | Forecast peak date | Peak level error |
+|---|---:|---:|---|---:|
+| Seasonal naive | **7.03%** | +0.9% | Dec 23 | +13.0% |
+| Prophet | 16.35% | −30.5% | Dec 16 | −15.1% |
+| Moving average | 16.72% | −33.7% | All nine weeks tied | −47.1% |
 
-~~~mermaid
-flowchart LR
-    A[Four weekly CSV datasets] --> B[Schema and completeness checks]
-    B --> C[Panel reconstruction and cleaning]
-    C --> D[Company, city, department and holiday EDA]
-    D --> E[Time-series diagnostics]
-    E --> F[Chronological model comparison]
-    F --> G[26-week aggregate forecast]
-    G --> H[Retail planning recommendations]
-~~~
+Seasonal naive had the lowest MAE and RMSE and matched the observed peak date. This comparison covers one year-end season. The 26-week forecast intervals remain uncalibrated.
 
-### 1. Data quality and preprocessing
+### Validation method
 
-- Standardized date columns and attached retailer identifiers.
-- Checked store/department coverage against the assignment's 7 × 6 structure.
-- Removed out-of-scope department identifiers in Spar's Store 7 (8,597 rows removed).
-- Detected **167 absent store–department–week records** in Seven Eleven by reconstructing the complete expected key grid.
-- Reconstructed missing observations with per-series linear interpolation and forward/backward filling in the **original notebook**.
-- Validated row counts and produced a combined panel for exploratory analysis.
+- **Exact dates.** All models forecast Fridays. Scoring validates unique date keys, requires the same date set, and joins predictions to observed actuals by date.
+- **Chronological splits.** The holdout trains on 114 weeks through April 6, 2012. The four earlier rolling folds train on 104, 106, 108 and 110 weeks. ADF uses training data and serves as a diagnostic.
+- **Missing sales.** The primary cohort excludes the four incomplete series. The separate 168-series sensitivity fills only training gaps using earlier observed sales or same-Friday peer medians for leading gaps. It scores the two complete holdout Fridays, June 8 and August 31, 2012. The forecast notebook keeps the gap audit, fills, fold scores and date-level predictions available as tables.
+- **Historical comparison.** The original Prophet run paired Sunday predictions with Friday sales by row position and scored a reconstructed 168-series target. The historical 4.80% MAPE and the current 3.58% MAPE come from different evaluation setups.
 
-The reconstruction is documented as historical methodology, **not as an endorsed leakage-safe imputation policy**. One store-department series has only 19 observed weeks out of 143, making imputation particularly uncertain.
+## Interpreting the business results
 
-### 2. Exploratory business analysis
+The observed sums reproduce the original rankings within the case groups, including the highest and lowest assigned city totals. They measure recorded sales, with unequal coverage for one group, and provide no evidence on market size, profitability or store efficiency.
 
-The notebook produces:
-
-- Retailer-level sales totals and weekly trend comparisons
-- Market-level totals and retailer-by-city comparisons
-- Department-level weekly and monthly seasonal profiles
-- Mean sales for flagged holiday versus non-holiday weeks
-- Inferred department labels using sales magnitude, seasonality and holiday sensitivity
-
-The inferred mapping is **hypothesis-based, not ground truth**: clothing, groceries, books/stationery, beverages, electronics and furniture.
-
-### 3. Statistical diagnostics
-
-The time-series section aggregates the panel into one weekly total-sales series and examines:
-
-- Additive trend/seasonal/residual decomposition with a 52-week seasonal period
-- 12-week rolling mean and standard deviation
-- Augmented Dickey–Fuller (ADF) unit-root test
-- Chronological 80/20 train-test split
-
-The original ADF calculation was performed on the full series before the split. It indicates evidence against a **nonseasonal unit root under that test specification**, but does not establish the absence of annual seasonality or other forms of nonstationarity.
-
-### 4. Forecasting models
-
-| Model | Specification in notebook | Role |
-|---|---|---|
-| Moving average | Last 12 training weeks, repeated across the test horizon | Constant-value baseline |
-| Holt–Winters exponential smoothing | Additive trend, additive seasonality, period = 52 | Trend/seasonal statistical baseline |
-| ARIMA | (2, 0, 2) | Nonseasonal autoregressive benchmark |
-| SARIMA | (1, 0, 1) × (0, 0, 1, 52) on log1p(sales) | Seasonal autoregressive benchmark |
-| Prophet | Yearly seasonality enabled | Additive trend/seasonal forecast |
-
-The original experiment evaluates **MAE**, **RMSE**, and **MAPE**. The Prophet model does not explicitly use the IsHoliday column as a custom holiday regressor.
-
-## Results in the original notebook
-
-The following values are reproduced from the existing notebook and report. They are retained for traceability; the table should **not** be interpreted as a validated leaderboard until the calendar alignment and missing-data treatment are corrected.
-
-| Forecasting method | MAE | RMSE | MAPE ↓ |
-|---|---:|---:|---:|
-| Prophet | 161,658.64 | 236,881.28 | **4.80%** |
-| Holt–Winters | 237,834.59 | 360,249.29 | 7.13% |
-| Moving average | 330,993.92 | 381,027.96 | 9.69% |
-| ARIMA | 379,929.25 | 423,525.98 | 11.18% |
-| SARIMA | 1,095,978.69 | 1,147,631.43 | 32.58% |
-
-The historical notebook ranks Prophet first and produces a 26-week forecast with nominal 80% prediction intervals. **This conclusion is provisional** because the original Prophet evaluation uses Sunday forecast dates against Friday actuals, comparing values by position rather than matching timestamps.
-
-## Selected business insights
-
-The figures below summarize descriptive patterns from the submitted report; they do not establish causal relationships.
-
-- **Company performance:** D-Mart records approximately 158M in cumulative sales value; Spar approximately 140M, Bigg Bazar approximately 135M, and Seven Eleven approximately 89M.
-- **Regional variation:** Mumbai has the highest aggregate sales, while Bangalore has the lowest. Regional leaders vary; Seven Eleven leads in Indore despite ranking last overall.
-- **Holiday association:** Mean sales in the inferred Electronics and Furniture departments are approximately **57%** and **75%** higher, respectively, on flagged holiday weeks. These are descriptive differences, not causal promotion effects.
-- **Seasonality:** Large recurring year-end peaks suggest the value of advance capacity planning and seasonal models.
-- **Department fingerprints:** Groceries appears comparatively stable; Electronics and Furniture have holiday-linked spikes; Books & Stationery has an August peak.
-
-**Business applications:** Inform seasonal inventory allocation, campaign timing, location-level benchmarking, and data-quality monitoring. Operational deployment would require category/store-level forecasts, lead times, stockout information, service-level targets, and calibrated uncertainty estimates.
-
-## Repository structure
-
-~~~text
-Analyzing-Business-Performance/
-├── Demand_forecasting.ipynb   # EDA, statistical tests, models, evaluation
-├── company1.csv               # Bigg Bazar
-├── company2.csv               # D-Mart
-├── company3.csv               # Spar
-├── company4.csv               # Seven Eleven
-├── final_report.pdf           # Written methodology, figures and conclusions
-├── README.md
-└── LICENSE                    # MIT
-~~~
+The source’s ten flagged dates correspond to Super Bowl, Labor Day, Thanksgiving and Christmas. On the complete cohort, departments 5 and 6 show **57.33%** and **75.26%** higher mean sales on flagged Fridays, respectively. These are descriptive associations. Department names are hypotheses. The files provide no measures of promotions, units demanded, stockouts or margins. [Source holiday calendar](https://www.kaggle.com/competitions/walmart-recruiting-store-sales-forecasting/data)
 
 ## Run locally
 
-The project is currently a **notebook-based analysis**, not an API or deployed forecasting service. It reads the four CSV files using paths relative to the working directory.
+Use Python 3.12. From the repository root, create an environment with the versions used for the forecasting rerun.
 
 ~~~bash
-git clone https://github.com/Y-ash-Y/Analyzing-Business-Performance.git
-cd Analyzing-Business-Performance
-
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 
-python -m pip install --upgrade pip
-python -m pip install pandas numpy matplotlib seaborn scipy statsmodels scikit-learn prophet notebook
+python -m pip install \
+  cmdstanpy==1.2.5 contourpy==1.4.0 cycler==0.12.1 fonttools==4.68.0 \
+  holidays==0.108 importlib_resources==7.1.0 kiwisolver==1.5.1 matplotlib==3.11.2 \
+  numpy==2.2.6 packaging==26.3 pandas==2.2.3 patsy==1.0.3 \
+  pillow==13.0.0 prophet==1.1.7 pyparsing==3.3.3 python-dateutil==2.9.0.post0 \
+  pytz==2026.6 scipy==1.17.1 six==1.17.0 stanio==0.5.1 \
+  statsmodels==0.14.5 tqdm==4.70.1 tzdata==2026.6
+python -m pip install notebook==7.4.7
 
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
 jupyter notebook Demand_forecasting.ipynb
 ~~~
 
-Run the notebook from the repository root so the CSV paths resolve. The repository does not yet contain pinned dependency versions or an automated test suite; library compatibility and numerical reproducibility may vary across environments. Prophet installation may require additional platform-specific setup.
+In Jupyter, select **Run All**. The notebook computes the exploratory charts, forecast results, and six regression checks in memory.
 
-## Validation notes and known limitations
-
-The original notebook and historical report are preserved for transparency. The following issues were found during a review of the actual code and source CSVs:
-
-| Priority | Finding | Corrective action |
-|---|---|---|
-| **P0** | Prophet uses weekly Sunday dates (freq="W"); the source series is Friday-based (W-FRI). Test forecasts are compared by array position. | Generate Friday forecasts, merge to actuals on the exact date, and recalculate all metrics. |
-| **P0** | Panel imputation occurs before the temporal split. At least one long missing-data interval crosses the train/test boundary, so fitted training values can incorporate later test-period observations. | Define cutoff first; use forecasting-origin-safe reconstruction, audit each gap, and track imputed observations. |
-| **P1** | The report calls 124 missing weeks in Seven Eleven's Store 3 / Department 6 "consecutive." They are **not consecutive**: the source has five missing runs (39, 35, 31, 11, and 8 weeks). | Correct the report; treat this series as high-uncertainty or exclude it in sensitivity analysis. |
-| **P1** | Model orders and a 52-week season are estimated/evaluated from only about 2.2 annual cycles in the training sample. | Add diagnostics, parameter rationale, simple seasonal-naive baselines, and rolling-origin evaluation. |
-| **P1** | ADF and some exploratory transformations use the full sample before a holdout is defined. | Fit/select diagnostics using training data only where they influence model choice. |
-| **P2** | The 80% Prophet forecast intervals are not empirically calibrated for the stated horizon. | Evaluate interval coverage and uncertainty by horizon. |
-| **P2** | Department labels and promotional explanations rely on inferred behavioral patterns. | Preserve uncertainty; distinguish association from causation. |
-
-**Current evaluation status:** The reported historical figures are reproducible as notebook outputs, but **the corrected accuracy and model ranking have not yet been recomputed**. Avoid describing 4.80% MAPE as a validated result until that work is complete.
-
-## Engineering roadmap
-
-- [ ] Implement a single canonical Friday-indexed time-series preparation function.
-- [ ] Add schema and key-uniqueness assertions for company × store × department × week.
-- [ ] Replace backward-looking leakage with cutoff-aware missing-data handling and sensitivity checks.
-- [ ] Build a common, date-aligned evaluation harness with seasonal-naive and moving-average baselines.
-- [ ] Run rolling-origin validation and residual diagnostics; compare seasonal configurations.
-- [ ] Record model settings, random seeds, dependency versions, and forecasts as versioned artifacts.
-- [ ] Add unit tests for temporal alignment, missing weeks, train/test isolation, and metric calculations.
-- [ ] Evaluate hierarchical company/store/department forecasting before using outputs for inventory decisions.
-
-## References
-
-- Hyndman & Athanasopoulos, [*Forecasting: Principles and Practice*](https://otexts.com/fpp3/)
-- Taylor & Letham, [*Forecasting at Scale*](https://peerj.com/preprints/3190/)
-- [Statsmodels time-series documentation](https://www.statsmodels.org/stable/tsa.html)
-- [Prophet documentation](https://facebook.github.io/prophet/)
-
-## License
-
-Released under the [MIT License](./LICENSE).
-
----
-
-**Project context:** IIT Kanpur Consulting Group summer project. The analysis is an educational case study; all business recommendations should be validated against actual operating constraints before deployment.
+Repository code is released under the [MIT License](LICENSE).
